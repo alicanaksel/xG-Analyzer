@@ -8,7 +8,7 @@ from pathlib import Path
 import pandas as pd
 
 BASE = Path(__file__).resolve().parent.parent
-EVENTS_PATH = BASE / "events" / "events_England.json"
+EVENTS_PATH = BASE / "data" / "raw" / "events_England.json"
 OUT_PATH = BASE / "data" / "raw" / "events_England.csv"
 
 # Wyscout tag id for a goal
