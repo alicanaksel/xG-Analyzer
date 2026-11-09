@@ -1,0 +1,2 @@
+pandas>=3.0
+soccerdata>=2026.43.0
