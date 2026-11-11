@@ -1,2 +1,4 @@
 pandas>=3.0
-soccerdata>=2026.43.0
+matplotlib>=3.8
+seaborn>=0.13
+ipykernel>=6.29
