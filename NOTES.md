@@ -23,3 +23,21 @@ Daily notes and decisions.
 - Distance and angle are strongly correlated (Pearson -0.75, Spearman -0.89), but at the same distance a wider angle still scores more, so both should go into the model.
 - One shot is at x = 100 between the posts (angle 180 deg, a goal). Kept, it is physically possible.
 - Decision for Day 4: train the model on open-play shots with `distance`, `angle`, `header`, `counter_attack`; read the distance/angle coefficients together because of the correlation.
+
+## 2026-11-13 - Days 1-3 follow-up (Hasan)
+- Added `docs/data_dictionary.md`: raw columns (keep/drop and why), coordinates, tag ids (known at shot time or not), missing values, useful columns. Competition: Premier League 2017/18, chosen because it is the league we follow most, so results can be checked with football knowledge.
+- `clean.py`: added `drop_missing`, `drop_duplicate_events` and `validate_shots` (no missing values, unique ids, coordinates in 0-100, exactly one body part). Real data: nothing removed. Note: `extra_shots.py` calls `drop_unused_columns`/`parse_tags` directly, so these checks do not run on penalties and free kicks yet.
+- Added `src/game_state.py`: score before each shot (`goals_for`, `goals_against`, `score_diff`, `game_state`). Goals = Shot / Penalty / Free kick shot with tag 101 (988) + own goals, tag 102, given to the opponent (29) = 1017. Save attempt events also carry tag 101 (keeper conceding) and are not counted.
+- Check: Arsenal 4-3 Leicester goal order matches the real match. Against keeper-conceded goals, 758 of 760 match-team rows agree; the 2 others are Wyscout recording errors (a goal with no shot event, a free kick without the goal tag).
+- Body part (`16_goal_rate_body_part_by_distance.png`): headers score more overall (13.5% vs 10.3%) only because they are taken closer (median 10.3 m vs 18.9 m). At the same distance headers score less (0-8 m: 27% vs 46%). Distance is a confounder, so `header` must be used together with `distance`.
+- Game state (`17_goal_rate_game_state.png`, open play): losing 9.3%, drawing 10.0%, winning 13.8%. The gap stays at the same distance (0-8 m: 32.8% / 33.8% / 46.7%). Winning teams shoot more from counter attacks (7.5% vs 3.3%) and head less (10.8% vs 19.7%).
+- Interpretation: the losing team pushes forward and leaves space behind, so the leading team gets cleaner chances (fits the higher counter-attack share). Psychology also plays a role: the leading team finishes more calmly and confidently (cannot be measured with this data).
+- Decision for Day 4: build the baseline without game state first, then add it and check whether the model improves.
+
+## 2026-11-13 - Day 4: train/test split and evaluation (Hasan)
+- Added `src/split.py`: open-play shots only, split **by match** with `GroupShuffleSplit` (20% of matches in test, `random_state=42`). All shots of a match stay on one side, so the model is never tested on a match it has seen. Output: `data/processed/train.csv`, `test.csv`.
+- Split result: train 304 matches / 6,755 shots / 738 goals (10.9%), test 76 matches / 1,696 shots / 176 goals (10.4%). `check_split` raises an error if a match is in both sets.
+- Added `src/evaluate.py`: `evaluate` (log loss, Brier, ROC AUC, total xG vs goals), `baseline_prob` (every shot gets the train goal rate), `compare_models`, `calibration_table` (10 equal-size bins), `plot_calibration`.
+- Added `scikit-learn` to `requirements.txt`.
+- Quick check of the helpers with a plain logistic regression (`distance`, `angle`, `header`, `counter_attack`) on the test set: baseline log loss 0.334 / AUC 0.50, model 0.275 / 0.80, xG/goals 1.04. Adding `score_diff`: 0.273 / 0.80. One split only; the real comparison is part of the Day 4 model work (Ali).
+- Figures 16 and 17 (body part by distance, game state) added to `reports/figures/`.
