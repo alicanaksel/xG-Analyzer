@@ -33,3 +33,11 @@ Daily notes and decisions.
 - Game state (`17_goal_rate_game_state.png`, open play): losing 9.3%, drawing 10.0%, winning 13.8%. The gap stays at the same distance (0-8 m: 32.8% / 33.8% / 46.7%). Winning teams shoot more from counter attacks (7.5% vs 3.3%) and head less (10.8% vs 19.7%).
 - Interpretation: the losing team pushes forward and leaves space behind, so the leading team gets cleaner chances (fits the higher counter-attack share). Psychology also plays a role: the leading team finishes more calmly and confidently (cannot be measured with this data).
 - Decision for Day 4: build the baseline without game state first, then add it and check whether the model improves.
+
+## 2026-11-13 - Day 4: train/test split and evaluation (Hasan)
+- Added `src/split.py`: open-play shots only, split **by match** with `GroupShuffleSplit` (20% of matches in test, `random_state=42`). All shots of a match stay on one side, so the model is never tested on a match it has seen. Output: `data/processed/train.csv`, `test.csv`.
+- Split result: train 304 matches / 6,755 shots / 738 goals (10.9%), test 76 matches / 1,696 shots / 176 goals (10.4%). `check_split` raises an error if a match is in both sets.
+- Added `src/evaluate.py`: `evaluate` (log loss, Brier, ROC AUC, total xG vs goals), `baseline_prob` (every shot gets the train goal rate), `compare_models`, `calibration_table` (10 equal-size bins), `plot_calibration`.
+- Added `scikit-learn` to `requirements.txt`.
+- Quick check of the helpers with a plain logistic regression (`distance`, `angle`, `header`, `counter_attack`) on the test set: baseline log loss 0.334 / AUC 0.50, model 0.275 / 0.80, xG/goals 1.04. Adding `score_diff`: 0.273 / 0.80. One split only; the real comparison is part of the Day 4 model work (Ali).
+- Figures 16 and 17 (body part by distance, game state) added to `reports/figures/`.
