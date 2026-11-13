@@ -25,6 +25,9 @@ Run the scripts in this order from the project root. Each step reads the output 
 | 3. Add penalties and free-kick shots | `python src/extra_shots.py` | `data/processed/shots_all.csv` |
 | 4. Add distance and angle | `python src/features.py` | `data/processed/shots_features.csv` |
 | 5. Add game state (score at the moment of the shot) | `python src/game_state.py` | `data/processed/shots_game_state.csv` |
+| 6. Train/test split by match (open play, 20% test) | `python src/split.py` | `data/processed/train.csv`, `test.csv` |
+
+Model metrics and calibration helpers are in `src/evaluate.py`.
 
 ## Notebooks
 
