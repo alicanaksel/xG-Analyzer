@@ -26,6 +26,7 @@ Run the scripts in this order from the project root. Each step reads the output 
 | 4. Add distance and angle | `python src/features.py` | `data/processed/shots_features.csv` |
 | 5. Add game state (score at the moment of the shot) | `python src/game_state.py` | `data/processed/shots_game_state.csv` |
 | 6. Train/test split by match (open play, 20% test) | `python src/split.py` | `data/processed/train.csv`, `test.csv` |
+| 7. Baseline logistic regression (models A and B) | `python src/model.py` | `data/processed/test_predictions.csv` |
 
 Model metrics and calibration helpers are in `src/evaluate.py`.
 
@@ -37,6 +38,7 @@ Model metrics and calibration helpers are in `src/evaluate.py`.
 | `02_eda_plots.ipynb` | Shot distribution and goal rate plots |
 | `03_features.ipynb` | Distance and angle formulas, tests and analysis |
 | `04_game_state.ipynb` | Body part and game state: goal rates and checks |
+| `05_baseline_model.ipynb` | Logistic regression: coefficients, cross-validation, test results, calibration |
 
 The raw columns, tag ids and cleaning decisions are documented in `docs/data_dictionary.md`.
 

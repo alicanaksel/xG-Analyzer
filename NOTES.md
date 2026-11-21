@@ -41,3 +41,16 @@ Daily notes and decisions.
 - Added `scikit-learn` to `requirements.txt`.
 - Quick check of the helpers with a plain logistic regression (`distance`, `angle`, `header`, `counter_attack`) on the test set: baseline log loss 0.334 / AUC 0.50, model 0.275 / 0.80, xG/goals 1.04. Adding `score_diff`: 0.273 / 0.80. One split only; the real comparison is part of the Day 4 model work (Ali).
 - Figures 16 and 17 (body part by distance, game state) added to `reports/figures/`.
+
+## 2026-11-21 - Day 4: baseline logistic regression (Ali)
+- Added `src/model.py` and `notebooks/05_baseline_model.ipynb`. Fit with `statsmodels` (plain maximum likelihood, same coefficients as scikit-learn without a penalty, max difference 0.0003) to get standard errors and confidence intervals. Added `statsmodels` to `requirements.txt`.
+- Model A = `distance`, `angle`, `header`, `counter_attack`. Model B = A + `score_diff`. All model choices made with 5-fold `GroupKFold` by match on train; test used once at the end.
+- Test set: baseline log loss 0.334 / AUC 0.50; A 0.275 / Brier 0.079 / AUC 0.80 / xG 183 vs 176 goals; B 0.273 / 0.079 / 0.80.
+- Odds ratios (model A): +5 m x0.57, +10 deg x1.27, header x0.43, counter attack x2.26. All p < 0.001.
+- Header is positive alone (+0.31) and negative with distance and angle (-0.84): distance is a confounder (matches notebook 04).
+- Distance and angle: VIF about 2.3 (moderate). Both together beat either alone in CV. Standardised effect: distance -0.90 per SD (8 m), angle +0.36 per SD (15 deg); distance is the main driver.
+- `score_diff`: better in 4 of 5 folds but only ~0.0005 log loss; likelihood-ratio statistic 7.8 (p = 0.005); +1 goal ahead = x1.10 odds.
+- `log(distance)` was worse in 3 of 5 folds and made angle non-significant, so plain distance stays.
+- Calibration is good overall (top decile 38% predicted vs 37% real), slightly too high around 4-7% xG (about 170 shots per bin, partly noise). Long shots (25 m+): train 34.2 xG vs 38 goals, test 8.9 vs 7, no systematic bias.
+- Recommendation (to agree with Hasan): model A is the main xG model, B stays an experiment. xG should measure chance quality; with the score inside, the same chance gets more xG when winning, which would mix match situation into the player/team analysis (Days 6-7).
+- For Day 5: `data/processed/test_predictions.csv` has `xg_baseline`, `xg_logit_A`, `xg_logit_B` for every test shot. New models can be added as columns and compared with `compare_models`. Figures 18-21 added.
