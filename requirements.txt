@@ -4,3 +4,4 @@ seaborn>=0.13
 ipykernel>=6.29
 scikit-learn>=1.5
 statsmodels>=0.14
+xgboost>=2.0

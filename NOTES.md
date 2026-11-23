@@ -54,3 +54,17 @@ Daily notes and decisions.
 - Calibration is good overall (top decile 38% predicted vs 37% real), slightly too high around 4-7% xG (about 170 shots per bin, partly noise). Long shots (25 m+): train 34.2 xG vs 38 goals, test 8.9 vs 7, no systematic bias.
 - Recommendation (to agree with Hasan): model A is the main xG model, B stays an experiment. xG should measure chance quality; with the score inside, the same chance gets more xG when winning, which would mix match situation into the player/team analysis (Days 6-7).
 - For Day 5: `data/processed/test_predictions.csv` has `xg_baseline`, `xg_logit_A`, `xg_logit_B` for every test shot. New models can be added as columns and compared with `compare_models`. Figures 18-21 added.
+
+## 2026-11-23 - Day 5: Random Forest and XGBoost (Ali)
+- Added `src/tree_models.py` and `notebooks/06_tree_models.ipynb`. Added `xgboost` to `requirements.txt`; on macOS it also needs `brew install libomp`.
+- Same rules as Day 4: model A features, hyperparameters chosen with 5-fold `GroupKFold` by match on train (same folds as `model.cross_validate`), scored with log loss; test used once.
+- Best settings: Random Forest depth 5, `min_samples_leaf` 20, `max_features` 2 (500 trees); XGBoost depth 1, learning rate 0.02, 600 trees, `min_child_weight` 10; XGBoost with monotone constraints (distance -1, angle +1) depth 2, learning rate 0.01, 600 trees. Saved in the code; `python src/tree_models.py --tune` reruns the searches.
+- CV log loss: xgb_mono 0.2926, logit_A 0.2928, xgb 0.2929, rf 0.2934. Differences (~0.001) are much smaller than the fold-to-fold spread (~0.02).
+- Test log loss: logit_A 0.2753, xgb 0.2762, rf 0.2765, xgb_mono 0.2765. Bootstrap by match (2,000 resamples): all tree-vs-logit_A intervals contain 0, so no real difference. logit_B is the only clearly better model (-0.0021, 95% CI -0.0039 to -0.0003).
+- XGBoost depth 1 (no interactions) is as good as depth 3: the four features have no useful interactions, which is why the logistic regression is already so good.
+- Overfitting: an unrestricted Random Forest scores 0.95 CV log loss and AUC 0.69 (worse than guessing the average).
+- Monotonicity along the centre line (2-40 m): xG goes up 58 times for rf, 7 for xgb, 0 for xgb_mono and logit_A.
+- Ends of the distance range: under 4 m the trees predict ~70% (train goal rate 67.8%, 59 shots) while the logistic regression climbs to ~85%; beyond 30 m the trees stay ~2% (train 2.4%, 548 shots) while the logistic regression drops to ~1%. Few shots there, so overall log loss barely changes.
+- Permutation importance (test): distance first for logit_A, xgb and xgb_mono; the Random Forest puts angle slightly ahead of distance because it spreads the information over the two correlated features. Header and counter attack follow in all models.
+- Recommendation: keep `logit_A` as the main xG model (as good as the trees, smooth, monotone, explainable with odds ratios). `xgb_mono` is the best alternative if a tree model is wanted.
+- For Hasan (Day 5 analysis): `data/processed/test_predictions.csv` now has `xg_baseline`, `xg_logit_A`, `xg_logit_B`, `xg_rf`, `xg_xgb`, `xg_xgb_mono`. Figures 22-26 added.
