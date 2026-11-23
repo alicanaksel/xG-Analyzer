@@ -11,6 +11,8 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+On macOS, XGBoost also needs the OpenMP runtime: `brew install libomp`.
+
 The raw data is not in Git (too large). Download `events_England.json` from the Figshare
 dataset and put it in `data/raw/`.
 
@@ -27,6 +29,7 @@ Run the scripts in this order from the project root. Each step reads the output 
 | 5. Add game state (score at the moment of the shot) | `python src/game_state.py` | `data/processed/shots_game_state.csv` |
 | 6. Train/test split by match (open play, 20% test) | `python src/split.py` | `data/processed/train.csv`, `test.csv` |
 | 7. Baseline logistic regression (models A and B) | `python src/model.py` | `data/processed/test_predictions.csv` |
+| 8. Random Forest and XGBoost (add `--tune` to rerun the grid searches) | `python src/tree_models.py` | `data/processed/test_predictions.csv` (all models) |
 
 Model metrics and calibration helpers are in `src/evaluate.py`.
 
@@ -39,6 +42,7 @@ Model metrics and calibration helpers are in `src/evaluate.py`.
 | `03_features.ipynb` | Distance and angle formulas, tests and analysis |
 | `04_game_state.ipynb` | Body part and game state: goal rates and checks |
 | `05_baseline_model.ipynb` | Logistic regression: coefficients, cross-validation, test results, calibration |
+| `06_tree_models.ipynb` | Random Forest and XGBoost: tuning, overfitting, monotone constraints, comparison with the logistic regression |
 
 The raw columns, tag ids and cleaning decisions are documented in `docs/data_dictionary.md`.
 
